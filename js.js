@@ -1,10 +1,30 @@
 //const table = document.querySelector("#table");
 
 const arr = [];
+let idCounter =0;
+
 
 function Book(title, author){
-    this.title = title;
+  this.id = idCounter;
+  idCounter++;
+  this.title = title;
     this.author = author;
+  //by default, read status is Read
+  this.readStatus = "Read";
+}
+
+Book.prototype.toggleRead = function(book,btn){
+  
+    btn.addEventListener("click",function(e){
+         if(e.target.textContent=="Read"){
+           e.target.textContent="Not Read";
+           book.readStatus="Not Read";
+         }
+        else{
+          e.target.textContent="Read";
+          book.readStatus="Not Read";
+        }
+    }); 
 }
 
 function addBookToLibrary(title, author){
@@ -15,40 +35,59 @@ function addBookToLibrary(title, author){
 addBookToLibrary('Daily Rituals', 'Mason Currey');
 addBookToLibrary('Digital Minimalism', 'Cal Newport' );
 
+
+function appendRows(newRow,tdTitle,tdAuthor,deleteBtn,index,readButton,table){
+    newRow.appendChild(tdTitle);
+    newRow.appendChild(tdAuthor);
+    newRow.appendChild(deleteBtn);
+    newRow.appendChild(index);
+    newRow.appendChild(readButton);
+    table.appendChild(newRow);
+}
+
 function displayBooks(arr){
-  const table= document.createElement("table");
-  table.className ="booksTable";
-  document.body.appendChild(table);
+ const table=document.querySelector("#tabli");
+  // const table= document.createElement("table");
+  //table.className ="booksTable";
+  //document.body.appendChild(table);
   
   arr.forEach((element)=>{
     const newRow = document.createElement("tr");
     const tdTitle = document.createElement("td");
     const tdAuthor =      document.createElement("td");
     const index =      document.createElement("td");
+    const deleteBtn=      document.createElement("button");
+    const readButton = document.createElement("button");
     
-    const bookIndex=arr.indexOf(element);
+    const bookId=element.id;
 
-    
-    const deleteBtn= document.createElement("button");
     deleteBtn.className = "deleteButton";
+    readButton.className="readStatusBtn";
     
-    deleteBtn.dataset.bookindex =bookIndex;
+    deleteBtn.dataset.bookindex=bookId;
     
     tdTitle.textContent = element.title;
     tdAuthor.textContent = element.author;
-    index.textContent = bookIndex;
+    index.textContent = bookId;
+    readButton.textContent = element.readStatus;
     
-    newRow.appendChild(tdTitle);
-    newRow.appendChild(tdAuthor);
-    newRow.appendChild(deleteBtn);
-    newRow.appendChild(index);
-    table.appendChild(newRow);
+    element.toggleRead(element, readButton);
     
+    appendRows(newRow,tdTitle,tdAuthor,deleteBtn,index,readButton,table);
+        
     deleteBtn.addEventListener("click",function () { 
-      newRow.remove();
-      arr.splice(deleteBtn.dataset.bookindex =bookIndex,1);
-      table.remove();
-  displayBooks(arr);
+      //arr.splice(deleteBtn.dataset.bookindex =bookIndex,1);
+      const indexToRemove = arr.findIndex(x => x.id == deleteBtn.dataset.bookindex);
+  if (indexToRemove !== -1) {
+    arr.splice(indexToRemove, 1); // Modifica o array original
+  }
+  //arr = arr.filter(x => x.id !== deleteBtn.dataset.bookindex);
+  //tem de se ter cuidado ao usar o filter, pois só copia para uma nova variável definida localmente
+  //é preferível usar o splice, que modifica a variável original diretamente
+      
+      newRow.remove();      
+      //table.remove();
+  //displayBooks(arr);
     });
   });
 };
@@ -67,44 +106,57 @@ showButton.addEventListener("click", () => {
 confirmBtn.addEventListener("click", (event) => {
   event.preventDefault(); 
   
-  const table = document.querySelector(".booksTable");
+  //const table = document.querySelector(".booksTable");
+  const table=document.querySelector("#tabli");
   
   const title = document.getElementById("title").value;
   const author = document.getElementById("author").value;
-  
-  addBookToLibrary(title,author);
-  
+  const readButton = document.createElement("button");
+    
   createBook.close();
   
     const newRow = document.createElement("tr");
     const tdTitle = document.createElement("td");
     const tdAuthor = document.createElement("td");
    const index =      document.createElement("td");
-    
-    const bookIndex=(arr.length)-1;
-  
-    const deleteBtn= document.createElement("button");
+  const deleteBtn= document.createElement("button");
     deleteBtn.className = "deleteButton";
     
-    deleteBtn.dataset.bookindex =bookIndex;
+
     
     tdTitle.textContent = title;
     tdAuthor.textContent = author;
-    index.textContent = bookIndex;
+
+    readButton.textContent = "Read";
   
-  newRow.appendChild(tdTitle);
-    newRow.appendChild(tdAuthor);
-    newRow.appendChild(deleteBtn);
-  newRow.appendChild(index);
-    table.appendChild(newRow);
+  addBookToLibrary(title,author);
+  
+//tive que ir buscar o elemento ao array
+  const bookIndex=(arr.length)-1;
+  const bookAppended = arr[bookIndex];
+ //para aqui lhe aplicar a função toggleRead 
+bookAppended.toggleRead(bookAppended,readButton);
+ 
+   index.textContent = bookAppended.id;
+  deleteBtn.dataset.bookindex =bookAppended.id;
+  
+  appendRows(newRow,tdTitle,tdAuthor,deleteBtn,index,readButton,table);
     
+  
+  
     deleteBtn.addEventListener("click",function () { 
+      //arr.splice(deleteBtn.dataset.bookindex=bookIndex,1);
+     //arr = arr.filter(x => x.id !== deleteBtn.dataset.bookindex);
+     const indexToRemove = arr.findIndex(x => x.id == deleteBtn.dataset.bookindex);
+     if (indexToRemove !== -1) {
+       arr.splice(indexToRemove, 1); // Modifica o array original
+     }
       newRow.remove();
-      arr.splice(deleteBtn.dataset.bookindex =bookIndex,1);
-      table.remove();
-  displayBooks(arr);
+      
+      //table.remove();
+  //displayBooks(arr);
     });
 });
 
-              
+
               
